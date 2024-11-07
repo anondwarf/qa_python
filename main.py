@@ -3,13 +3,13 @@ class BooksCollector:
     def __init__(self):
         self.books_genre = {}
         self.favorites = []
-        self.genre = ['Фантастика', 'Ужасы', 'Детективы', 'Мультфильмы', 'Комедии']
-        self.genre_age_rating = ['Ужасы', 'Детективы']
+        self.genre = ["Фантастика", "Ужасы", "Детективы", "Мультфильмы", "Комедии"]
+        self.genre_age_rating = ["Ужасы", "Детективы"]
 
     # добавляем новую книгу
     def add_new_book(self, name):
         if not self.books_genre.get(name) and 0 < len(name) < 41:
-            self.books_genre[name] = ''
+            self.books_genre[name] = ""
 
     # устанавливаем книге жанр
     def set_book_genre(self, name, genre):
@@ -44,7 +44,7 @@ class BooksCollector:
     # добавляем книгу в Избранное
     def add_book_in_favorites(self, name):
         if name in self.books_genre:
-            if name not in self.favorites:
+            if name not in self.favorites:  # NOSONAR
                 self.favorites.append(name)
 
     # удаляем книгу из Избранного

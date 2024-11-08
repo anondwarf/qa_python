@@ -1,3 +1,4 @@
+# coding=utf-8
 import pytest
 
 from main import BooksCollector
@@ -7,3 +8,6 @@ from main import BooksCollector
 def setup():
     collector = BooksCollector()
     return collector
+
+
+# TODO создать фикстуры для генерации тестов

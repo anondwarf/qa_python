@@ -1,3 +1,4 @@
+# coding=utf-8
 class BooksCollector:
 
     def __init__(self):

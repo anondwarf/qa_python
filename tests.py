@@ -1,452 +1,562 @@
 # coding=utf-8
+import random
+
 import pytest
 
+import helper
 from main import BooksCollector
 
 
 class TestBooksCollector:
 
-    def test_init_books_genre_default_values(self, setup: BooksCollector) -> None:
+    def test_init_books_genre_default_values(self, collector: BooksCollector) -> None:
         """
         Проверка дефолтного значения books_genre
 
-        :param setup: Фикстура из conftest.py
+        :param collector: Фикстура из conftest.py
         """
-        assert len(setup.books_genre) == 0
+        assert len(collector.books_genre) == 0
 
-    def test_init_favorites_default_values(self, setup: BooksCollector) -> None:
+    def test_init_favorites_default_values(self, collector: BooksCollector) -> None:
         """
         Проверка дефолтного значения favorites
 
-        :param setup: Фикстура из conftest.py
+        :param collector: Фикстура из conftest.py
         """
-        assert len(setup.favorites) == 0
+        assert len(collector.favorites) == 0
 
     @pytest.mark.parametrize(
         "genre", [["Фантастика", "Ужасы", "Детективы", "Мультфильмы", "Комедии"]]
     )
     def test_init_genre_default_values(
-        self, setup: BooksCollector, genre: list[str]
+        self, collector: BooksCollector, genre: list[str]
     ) -> None:
         """
         Проверка дефолтного значения genre
 
-        :param setup: Фикстура из conftest.py
+        :param collector: Фикстура из conftest.py
         :param genre: Параметризация теста
         """
-        assert setup.genre == genre
+        assert collector.genre == genre
 
     @pytest.mark.parametrize("genre_age_rating", [["Ужасы", "Детективы"]])
     def test_init_genre_age_rating_default_value(
-        self, setup: BooksCollector, genre_age_rating: list[str]
+        self, collector: BooksCollector, genre_age_rating: list[str]
     ) -> None:
         """
         Проверка дефолтного значения genre_age_rating
-        :param setup: Фикстура из conftest.py
+        :param collector: Фикстура из conftest.py
         :param genre_age_rating: Параметризация теста
         """
-        assert setup.genre_age_rating == genre_age_rating
+        assert collector.genre_age_rating == genre_age_rating
 
-    @pytest.mark.parametrize("name", ["Первая хорошая книга", "Вторая хорошая книга"])
+    @pytest.mark.parametrize(
+        "name",
+        [
+            helper.generate_random_string(1),
+            helper.generate_random_string(2),
+            helper.generate_random_string(random.randint(3, 38)),
+            helper.generate_random_string(39),
+            helper.generate_random_string(40),
+        ],
+    )
     def test_add_new_book_acceptable_length_name(
-        self, setup: BooksCollector, name: str
+        self, collector: BooksCollector, name: str
     ) -> None:
         """
         Проверка метода add_new_book, попытка добавления книг
 
-        :param setup: Фикстура из conftest.py
-        :param name: Параметризация теста
+        :param collector: Фикстура из conftest.py
+        :param name: Параметризация теста, используется функция
+        `helper.generate_random_string` для генерации строки
         """
-        setup.add_new_book(name)
-        assert name in setup.books_genre
+        collector.add_new_book(name)
+        assert name in collector.books_genre
 
     @pytest.mark.parametrize(
         "books_genre, name",
         [
-            ({"Первая хорошая книга": ""}, "Вторая хорошая книга"),
-            ({"Третья хорошая книга": ""}, "Четвертая хорошая книга"),
+            (
+                helper.generate_random_books_genre(random.randint(1, 15), True),
+                helper.generate_random_string(random.randint(1, 40)),
+            ),
+            (
+                helper.generate_random_books_genre(random.randint(1, 15), False),
+                helper.generate_random_string(random.randint(1, 40)),
+            ),
         ],
     )
     def test_add_new_book_books_genre_not_empty(
-        self, setup: BooksCollector, name: str, books_genre: dict[str, str]
+        self, collector: BooksCollector, name: str, books_genre: dict[str, str]
     ) -> None:
         """
         Проверка того что при добавлении в не пустой словарь `books_genre`,
         новой книги - старые не удаляются
 
-        :param setup: Фикстура из conftest.py
+        :param collector: Фикстура из conftest.py
         :param name: Параметризация теста
         :param books_genre: Параметризация теста
         """
-        setup.books_genre = books_genre
-        setup.add_new_book(name)
-        assert len(setup.books_genre) == len(books_genre) + 1
+        init_length = len(books_genre)
+        collector.books_genre = books_genre
+        collector.add_new_book(name)
+        assert len(collector.books_genre) == init_length + 1
 
-    @pytest.mark.parametrize("name", ["", "a" * 42])
+    @pytest.mark.parametrize(
+        "name",
+        [
+            "",
+            helper.generate_random_string(41),
+            helper.generate_random_string(42),
+            helper.generate_random_string(random.randint(43, 100)),
+        ],
+    )
     def test_add_new_book_negative_length_name(
-        self, setup: BooksCollector, name: str
+        self, collector: BooksCollector, name: str
     ) -> None:
         """
         Проверка метода add_new_book, ввод недопустимых значений
 
-        :param setup: Фикстура из conftest.py
+        :param collector: Фикстура из conftest.py
         :param name: Параметризация теста
         """
-        setup.add_new_book(name)
-        assert len(setup.books_genre) == 0
+        collector.add_new_book(name)
+        assert len(collector.books_genre) == 0
 
     @pytest.mark.parametrize(
-        "books_genre", [{"Хорошая книга": ""}, {"Еще одна хорошая книга": ""}]
+        "books_genre",
+        [
+            helper.generate_random_books_genre(random.randint(1, 15), False),
+            helper.generate_random_books_genre(random.randint(1, 15), False),
+        ],
     )
     def test_set_book_genre_exist_books(
-        self, setup: BooksCollector, books_genre: dict[str, str]
+        self, collector: BooksCollector, books_genre: dict[str, str]
     ) -> None:
         """
         Проверка метода set_book_genre, установка жанра книге
 
-        :param setup: Фикстура из conftest.py
+        :param collector: Фикстура из conftest.py
         :param books_genre: Параметризация теста
         """
-        setup.books_genre = books_genre
+        collector.books_genre = books_genre
         book_name = next(iter(books_genre))
-        setup.set_book_genre(book_name, setup.genre[0])
-        assert setup.books_genre.get(book_name) == setup.genre[0]
+        set_genre = random.choice(collector.genre)
+        collector.set_book_genre(book_name, set_genre)
+        assert collector.books_genre.get(book_name) == set_genre
 
-    @pytest.mark.parametrize("name", ["Плохая книга", "Еще плохая одна книга"])
+    @pytest.mark.parametrize(
+        "name",
+        [
+            helper.generate_random_string(random.randint(1, 40)),
+            helper.generate_random_string(random.randint(1, 40)),
+        ],
+    )
     def test_set_book_genre_missing_book(
-        self, setup: BooksCollector, name: str
+        self, collector: BooksCollector, name: str
     ) -> None:
         """
         Проверка метода set_book_genre, попытка установка жанра книге,
         отсутствующей в books_genre
 
-        :param setup: Фикстура из conftest.py
+        :param collector: Фикстура из conftest.py
         :param name: Параметризация теста
         """
-        setup.set_book_genre(name, setup.genre[0])
-        assert len(setup.books_genre) == 0
+        collector.set_book_genre(name, collector.genre[0])
+        assert len(collector.books_genre) == 0
 
     @pytest.mark.parametrize(
         "books_genre, genre",
         [
-            ({"Первая хорошая книга": ""}, "Роман"),
-            ({"Вторая хорошая книга": ""}, "Научпок"),
+            (
+                helper.generate_random_books_genre(random.randint(1, 15), False),
+                helper.generate_random_string(random.randint(1, 40)),
+            ),
+            (
+                helper.generate_random_books_genre(random.randint(1, 15), False),
+                helper.generate_random_string(random.randint(1, 40)),
+            ),
         ],
     )
     def test_set_book_genre_missing_genre(
-        self, setup: BooksCollector, books_genre: dict[str, str], genre: str
+        self, collector: BooksCollector, books_genre: dict[str, str], genre: str
     ) -> None:
         """
         Проверка метода set_book_genre, попытка добавление несуществующего
         жанра в genre
 
-        :param setup: Фикстура из conftest.py
+        :param collector: Фикстура из conftest.py
         :param books_genre: Параметризация теста
         :param genre: Параметризация теста
         """
         name_book = list(books_genre.keys())[0]
-        setup.set_book_genre(name_book, genre)
-        assert setup.books_genre.get(name_book) is None
+        collector.set_book_genre(name_book, genre)
+        assert collector.books_genre.get(name_book) is None
 
     @pytest.mark.parametrize(
         "books_genre",
-        [{"Хорошая книга": "Фантастика"}, {"Еще одна хорошая книга": "Детективы"}],
+        [
+            helper.generate_random_books_genre(random.randint(1, 15), True),
+            helper.generate_random_books_genre(random.randint(1, 15), True),
+        ],
     )
     def test_get_book_genre(
-        self, setup: BooksCollector, books_genre: dict[str, str]
+        self, collector: BooksCollector, books_genre: dict[str, str]
     ) -> None:
         """
         Проверка метода get_book_genre, получение жанра существующей книги с
         указанным жанром
 
-        :param setup: Фикстура из conftest.py
+        :param collector: Фикстура из conftest.py
         :param books_genre: Параметризация теста
         """
-        setup.books_genre = books_genre
-        assert setup.get_book_genre(next(iter(books_genre))) == books_genre.get(
+        collector.books_genre = books_genre
+        assert collector.get_book_genre(next(iter(books_genre))) == books_genre.get(
             next(iter(books_genre))
         )
 
-    @pytest.mark.parametrize("name", ["Плохая книга", "Еще одна плохая книга"])
-    def test_get_book_genre_empty_book(self, setup: BooksCollector, name: str) -> None:
+    @pytest.mark.parametrize(
+        "name",
+        [
+            helper.generate_random_string(random.randint(1, 40)),
+            helper.generate_random_string(random.randint(1, 40)),
+        ],
+    )
+    def test_get_book_genre_empty_book(
+        self, collector: BooksCollector, name: str
+    ) -> None:
         """
         Проверка метода get_book_genre, получение жанра по книге которой нет в
         books_genre
 
-        :param setup: Фикстура из conftest.py
+        :param collector: Фикстура из conftest.py
         :param name: Параметризация теста
         """
-        assert setup.get_book_genre(name) is None
+        assert collector.get_book_genre(name) is None
 
     @pytest.mark.parametrize(
-        "genre, books_genre",
+        "books_genre",
         [
-            (
-                "Фантастика",
-                {
-                    "Первая хорошая книга": "Фантастика",
-                    "Вторая хорошая книга": "Фантастика",
-                    "Третья хорошая книга": "Ужасы",
-                },
-            ),
-            (
-                "Детективы",
-                {
-                    "Четвертая хорошая книга": "Детективы",
-                    "Пятая хорошая книга": "Детективы",
-                    "Шестая хорошая книга": "Комедии",
-                },
-            ),
+            helper.generate_random_books_genre(random.randint(1, 15), True),
+            helper.generate_random_books_genre(random.randint(1, 15), True),
         ],
     )
-    def test_get_books_with_specific_genre(
-        self, setup: BooksCollector, books_genre: dict[str, str], genre: str
+    def test_get_books_with_specific_genre_count_genre(
+        self, collector: BooksCollector, books_genre: dict[str, str]
     ) -> None:
         """
         Проверка метода get_books_with_specific_genre, получения списка книг
         по заданному жанру
 
-        :param setup: Фикстура из conftest.py
+        :param collector: Фикстура из conftest.py
         :param books_genre: Параметризация теста
-        :param genre: Параметризация теста
         """
-        setup.books_genre = books_genre
-        # FIXME разделить тест на два
-        assert len(setup.get_books_with_specific_genre(genre)) == 2
-        assert setup.get_books_with_specific_genre(genre) == [
-            key for key, value in books_genre.items() if value == genre
+        collector.books_genre = books_genre
+        random_genre: str = random.choice(list(collector.books_genre.values()))
+        count_genre_init = sum(
+            1 for value in books_genre.values() if value == random_genre
+        )
+        assert (
+            len(collector.get_books_with_specific_genre(random_genre))
+            == count_genre_init
+        )
+
+    @pytest.mark.parametrize(
+        "books_genre",
+        [
+            helper.generate_random_books_genre(random.randint(1, 15), True),
+            helper.generate_random_books_genre(random.randint(1, 15), True),
+        ],
+    )
+    def test_get_books_with_specific_genre_data_comparison(
+        self, collector: BooksCollector, books_genre: dict[str, str]
+    ) -> None:
+        """
+        Проверка, что при вызове метода `get_books_with_specific_genre`
+        возвращенный список корректен.
+
+        :param collector: Фикстура возвращающая BooksCollector.
+        :param books_genre: Параметризация теста, генерируется случайный dict books_genre
+        """
+        collector.books_genre = books_genre
+        random_genre: str = random.choice(list(collector.books_genre.values()))
+        assert collector.get_books_with_specific_genre(random_genre) == [
+            key for key, value in books_genre.items() if value == random_genre
         ]
 
     @pytest.mark.parametrize("genre", ["Фантастика"])
     def test_get_books_with_specific_genre_negative(
-        self, setup: BooksCollector, genre: str
+        self, collector: BooksCollector, genre: str
     ) -> None:
         """
         Проверка метода get_books_with_specific, получение списка книг по
         существующему жанру, когда список книг пустой
 
-        :param setup: Фикстура из conftest.py
+        :param collector: Фикстура из conftest.py
         :param genre: Параметризация теста
         """
-        assert setup.get_books_with_specific_genre(genre) == []
+        assert collector.get_books_with_specific_genre(genre) == []
 
     @pytest.mark.parametrize(
-        "books_genre, name",
+        "books_genre",
         (
             [
-                {
-                    "Первая хорошая книга": "Фантастика",
-                    "Вторая хорошая книга": "Фантастика",
-                    "Третья хорошая книга": "Ужасы",
-                },
-                "Первая хорошая книга",
+                helper.generate_random_books_genre(random.randint(1, 15), True),
+                helper.generate_random_books_genre(random.randint(1, 15), False),
             ],
         ),
     )
     def test_get_books_genre(
-        self, setup: BooksCollector, books_genre: dict[str, str], name: str
+        self, collector: BooksCollector, books_genre: dict[str, str]
     ) -> None:
         """
         Проверка модуля get_books_genre, на то что возвращает словарь
 
-        :param setup: Фикстура из conftest.py
+        :param collector: Фикстура из conftest.py
         :param books_genre: Параметризация теста
-        :param name: Параметризация теста
         """
-        setup.books_genre = books_genre
-        # FIXME разделить тест на два
-        assert isinstance(setup.get_books_genre(), dict) == True
-        assert (setup.get_books_genre() == books_genre) == True
+        collector.books_genre = books_genre
+        assert collector.get_books_genre() == books_genre
 
     @pytest.mark.parametrize(
-        "books_genre, books_list",
-        (
-            [
-                {
-                    "Первая хорошая книга": "Фантастика",
-                    "Вторая хорошая книга": "Фантастика",
-                    "Третья взрослая книга": "Ужасы",
-                },
-                ["Первая хорошая книга", "Вторая хорошая книга"],
-            ],
-        ),
+        "books_genre",
+        [
+            helper.generate_random_books_genre(random.randint(1, 15), True),
+            helper.generate_random_books_genre(random.randint(1, 15), True),
+        ],
     )
-    def test_get_books_for_children(
-        self, setup, books_genre: BooksCollector, books_list: dict[str, str]
+    def test_get_books_for_children_match_items(
+        self,
+        collector: BooksCollector,
+        books_genre: dict[str, str],
     ) -> None:
         """
         Проверка метода get_books_for_children, проверка возвращает ли метод
         список книг исключая книг с взрослым жанром
 
-        :param setup: Фикстура из conftest.py
-        :param books_list: Параметризация теста
+        :param collector: Фикстура из conftest.py
         """
-        setup.books_genre = books_genre
-        # FIXME Разделить на три
-        assert isinstance(setup.get_books_for_children(), list) == True
-        assert len(setup.get_books_for_children()) == 2
-        assert setup.get_books_for_children() == books_list
+        collector.books_genre = books_genre
+        set_not_children_genre = set(collector.genre_age_rating)
+        match_books: list[str] = []
+        for key, value in books_genre.items():
+            if value not in set_not_children_genre:
+                match_books.append(key)
+        assert collector.get_books_for_children() == match_books
 
     @pytest.mark.parametrize(
-        "books_genre, name",
+        "books_genre",
         [
-            (
-                {
-                    "Первая хорошая книга": "Фантастика",
-                    "Вторая хорошая книга": "Фантастика",
-                    "Третья взрослая книга": "Ужасы",
-                },
-                "Первая хорошая книга",
-            ),
-            (
-                {
-                    "Четвертая взрослая книга": "Детективы",
-                    "Вторая хорошая книга": "Мультфильмы",
-                    "Первая хорошая книга": "Комедии",
-                },
-                "Вторая хорошая книга",
-            ),
+            helper.generate_random_books_genre(random.randint(5, 15), True),
+            helper.generate_random_books_genre(random.randint(5, 15), True),
         ],
     )
-    def test_add_book_in_favorites_existing_name(
-        self, setup: BooksCollector, books_genre: dict[str, str], name: str
+    def test_get_books_for_children_count_books(
+        self, collector: BooksCollector, books_genre: dict[str, str]
+    ) -> None:
+        """
+        Проверка, что при вызове функции `get_books_for_children`, количество
+        книг в списке корректно.
+
+        :param collector: Фикстура возвращающая BooksCollector.
+        :param books_genre: Параметризация теста, генерируется случайный dict books_genre
+        """
+        collector.books_genre = books_genre
+        set_not_children_genre = set(collector.genre_age_rating)
+        match_books: list[str] = []
+        for key, value in books_genre.items():
+            if value not in set_not_children_genre:
+                match_books.append(key)
+        assert len(collector.get_books_for_children()) == len(match_books)
+
+    @pytest.mark.parametrize(
+        "books_genre",
+        [
+            helper.generate_random_books_genre(random.randint(1, 15), True),
+            helper.generate_random_books_genre(random.randint(1, 15), False),
+        ],
+    )
+    def test_add_book_in_favorites_count_book(
+        self, collector: BooksCollector, books_genre: dict[str, str]
     ) -> None:
         """
         Проверка метода add_book_in_favorites, попытка добавить книгу в
         избранное
 
-        :param setup: Фикстура из conftest.py
+        :param collector: Фикстура из conftest.py
         :param books_genre: Параметризация теста
-        :param name: Параметризация теста
         """
-        setup.books_genre = books_genre
-        setup.add_book_in_favorites(name)
-        # FIXME разделить тест на два
-        assert len(setup.favorites) == 1
-        assert name in setup.favorites
+        collector.books_genre = books_genre
+        choice_book = random.choice(list(collector.books_genre.keys()))
+        collector.add_book_in_favorites(choice_book)
+        assert len(collector.favorites) == 1
+
+    @pytest.mark.parametrize(
+        "books_genre",
+        [
+            helper.generate_random_books_genre(random.randint(1, 15), True),
+            helper.generate_random_books_genre(random.randint(1, 15), False),
+        ],
+    )
+    def test_add_book_in_favorites_data_comparison(
+        self, collector: BooksCollector, books_genre: dict[str, str]
+    ) -> None:
+        """
+        Проверка, что при добавлении книги в избранное, она добавляется в
+        список.
+
+        :param collector: Фикстура возвращающая BooksCollector.
+        :param books_genre: Параметризация теста, генерирует случайный dict books_genre
+        """
+        collector.books_genre = books_genre
+        choice_book = random.choice(list(collector.books_genre.keys()))
+        collector.add_book_in_favorites(choice_book)
+        assert choice_book in collector.favorites
 
     @pytest.mark.parametrize(
         "books_genre, name",
         [
             (
-                {
-                    "Первая хорошая книга": "Фантастика",
-                    "Вторая хорошая книга": "Фантастика",
-                    "Третья взрослая книга": "Ужасы",
-                },
-                "Шестая хорошая книга",
+                helper.generate_random_books_genre(random.randint(1, 15), True),
+                helper.generate_random_string(random.randint(1, 40)),
             ),
             (
-                {
-                    "Четвертая взрослая книга": "Детективы",
-                    "Вторая хорошая книга": "Мультфильмы",
-                    "Первая хорошая книга": "Комедии",
-                },
-                "Моя хорошая книга",
+                helper.generate_random_books_genre(random.randint(1, 15), True),
+                helper.generate_random_string(random.randint(1, 40)),
             ),
         ],
     )
     def test_add_book_in_favorites_missing_name(
-        self, setup: BooksCollector, books_genre: dict[str, str], name: str
+        self, collector: BooksCollector, books_genre: dict[str, str], name: str
     ) -> None:
         """
         Проверка метода add_book_in_favorites, попытка добавить в избранное
         книгу, отсутствующую в books_genre
 
-        :param setup: Фикстура из conftest.py
+        :param collector: Фикстура из conftest.py
         :param books_genre: Параметризация теста
         :param name: Параметризация теста
         """
-        setup.books_genre = books_genre
-        setup.add_book_in_favorites(name)
-        assert setup.favorites == []
+        collector.books_genre = books_genre
+        collector.add_book_in_favorites(name)
+        assert collector.favorites == []
 
     @pytest.mark.parametrize(
-        "books_genre, favorites, name",
+        "books_genre",
         [
-            (
-                {
-                    "Первая хорошая книга": "Фантастика",
-                    "Вторая хорошая книга": "Фантастика",
-                    "Третья взрослая книга": "Ужасы",
-                },
-                ["Первая хорошая книга"],
-                "Первая хорошая книга",
-            ),
-            (
-                {
-                    "Моя хорошая книга": "Детективы",
-                    "Вторая хорошая книга": "Мультфильмы",
-                    "Первая хорошая книга": "Комедии",
-                },
-                ["Моя хорошая книга"],
-                "Моя хорошая книга",
-            ),
+            helper.generate_random_books_genre(random.randint(1, 15), True),
+            helper.generate_random_books_genre(random.randint(1, 15), False),
         ],
     )
     def test_add_book_in_favorites_name_in_favorites(
-        self, setup, books_genre: BooksCollector, favorites: list[str], name: str
+        self,
+        collector: BooksCollector,
+        books_genre: dict[str, str],
     ) -> None:
         """
         Проверка метода add_book_in_favorites, попытка добавить в избранное
         книгу которая уже в избранном
 
-        :param setup: Фикстура из conftest.py
-        :param favorites: Параметризация теста
-        :param name: Параметризация теста
+        :param collector: Фикстура из conftest.py
         """
-        setup.books_genre = books_genre
-        setup.favorites = favorites
-        init_length = len(setup.favorites)
-        setup.add_book_in_favorites(name)
-        assert len(setup.favorites) == init_length
+        collector.books_genre = books_genre
+        choice_book = random.choice(list(books_genre.keys()))
+        collector.favorites = [choice_book]
+        init_length = len(collector.favorites)
+        collector.add_book_in_favorites(choice_book)
+        assert len(collector.favorites) == init_length
+
+    @pytest.mark.parametrize(
+        "favorites",
+        [
+            helper.generate_random_favorite_list(random.randint(1, 15)),
+            helper.generate_random_favorite_list(random.randint(1, 15)),
+        ],
+    )
+    def test_delete_book_from_favorites_length(
+        self, collector: BooksCollector, favorites: list[str]
+    ) -> None:
+        """
+        Проверка, что при удалении книги из списка избранного, размер списка
+        изменяется.
+
+        :param collector: Фикстура возвращающая BooksCollector.
+        :param favorites: Параметризация теста, генерируется рандомный список избранного.
+        """
+        collector.favorites = favorites
+        init_length = len(collector.favorites)
+        choice_book = random.choice(list(favorites))
+        collector.delete_book_from_favorites(choice_book)
+        assert len(collector.favorites) == (init_length - 1)
+
+    @pytest.mark.parametrize(
+        "favorites",
+        [
+            helper.generate_random_favorite_list(random.randint(1, 15)),
+            helper.generate_random_favorite_list(random.randint(1, 15)),
+        ],
+    )
+    def test_delete_book_from_favorites_data_comparison(
+        self, collector: BooksCollector, favorites: list[str]
+    ) -> None:
+        """
+        Проверка, что при удалении книги из избранного, она удаляется.
+
+        :param collector: Фикстура возвращающая BooksCollector.
+        :param favorites: Параметризация теста, генерируется рандомный список избранного.
+        """
+        collector.favorites = favorites
+        choice_book = random.choice(list(favorites))
+        collector.delete_book_from_favorites(choice_book)
+        assert choice_book is not collector.favorites
 
     @pytest.mark.parametrize(
         "favorites, name",
         [
-            (["Первая книга", "Вторая книга"], "Первая книга"),
-            (["Четвертая книга", "Пятая книга"], "Пятая книга"),
+            (
+                helper.generate_random_favorite_list(random.randint(1, 15)),
+                helper.generate_random_string(random.randint(1, 40)),
+            ),
+            (
+                helper.generate_random_favorite_list(random.randint(1, 15)),
+                helper.generate_random_string(random.randint(1, 40)),
+            ),
         ],
     )
-    def test_delete_book_from_favorites(
-        self, setup: BooksCollector, favorites: list[str], name: str
+    def test_delete_book_from_favorites_missing_name_length(
+        self, collector: BooksCollector, favorites: list[str], name: str
     ) -> None:
         """
-        Проверка метода delete_book_from_favorites, попытка удалить книгу
-        присутствующую в favorites
+        Проверка, что при попытке удалить книгу из списка избранного,
+        которой в нем нет, сам длина списка избранного не изменяется.
 
-        :param setup: Фикстура из conftest.py
-        :param favorites: Параметризация теста
-        :param name: Параметризация теста
+        :param collector: Фикстура возвращающая BooksCollector.
+        :param favorites: Параметризация теста, генерируется рандомный список избранного.
+        :param name: Параметризация теста, генерируется случайная строка.
         """
-        setup.favorites = favorites
-        init_length = len(setup.favorites)
-        setup.delete_book_from_favorites(name)
-        # FIXME поделить тест
-        assert len(setup.favorites) == (init_length - 1)
-        assert name is not setup.favorites
+        collector.favorites = favorites
+        init_length = len(collector.favorites)
+        collector.delete_book_from_favorites(name)
+        assert len(collector.favorites) == init_length
 
     @pytest.mark.parametrize(
-        "favorites, name",
+        "favorites",
         [
-            (["Первая книга", "Вторая книга"], "Пятая книга"),
-            (["Четвертая книга", "Пятая книга"], "Первая книга"),
+            helper.generate_random_favorite_list(random.randint(1, 15)),
+            helper.generate_random_favorite_list(random.randint(1, 15)),
         ],
     )
-    def test_delete_book_from_favorites_empty_favorites(
-        self, setup: BooksCollector, favorites: list[str], name: str
+    def test_delete_book_from_favorites_missing_name_data_comparison(
+        self, collector: BooksCollector, favorites: list[str]
     ) -> None:
         """
-        Проверка метода delete_book_from_favorites, попытка удалить из списка
-        избранного книги, которой в ней нет
+        Проверка, что при попытке удалении из списка избранного книги,
+        которой в нем нет - элементы списка не изменяются.
 
-        :param setup: Фикстура из conftest.py
-        :param favorites: Параметризация теста
-        :param name: Параметризация теста
+        :param collector: Фикстура возвращающая BooksCollector.
+        :param favorites: Параметризация теста, генерируется рандомный список избранного.
         """
-        setup.favorites = favorites
-        init_length = len(setup.favorites)
-        setup.delete_book_from_favorites(name)
-        # FIXME поделить тест
-        assert len(setup.favorites) == init_length
-        assert setup.favorites == favorites
+        collector.favorites = favorites
+        choice_book = random.choice(list(favorites))
+        collector.delete_book_from_favorites(choice_book)
+        assert collector.favorites == favorites

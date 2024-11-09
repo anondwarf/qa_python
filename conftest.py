@@ -5,9 +5,6 @@ from main import BooksCollector
 
 
 @pytest.fixture(scope="function", autouse=True)
-def setup():
+def collector():
     collector = BooksCollector()
     return collector
-
-
-# TODO создать фикстуры для генерации тестов

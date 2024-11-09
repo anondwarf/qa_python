@@ -2,6 +2,11 @@
 
 <!-- TOC -->
 * [qa_python](#qa_python)
+  * [Доп методы](#доп-методы)
+    * [helper.py](#helperpy)
+      * [generate_random_string](#generate_random_string)
+      * [generate_random_books_genre](#generate_random_books_genre)
+      * [generate_random_favorite_list](#generate_random_favorite_list)
   * [Реализованные тесты](#реализованные-тесты)
     * [Метод `_init_`](#метод-_init_)
     * [Метод `add_new_book`](#метод-add_new_book)
@@ -13,6 +18,23 @@
     * [Метод `add_book_in_favorites`](#метод-add_book_in_favorites)
     * [Метод `delete_book_from_favorites`](#метод-delete_book_from_favorites)
 <!-- TOC -->
+
+## Доп методы
+
+### helper.py
+
+####  generate_random_string
+
+Генерируется строка из случайных символов, различного регистра. Длина указывается в параметре `number_of_entries: int`.
+
+#### generate_random_books_genre
+
+Генерируется словарь books_genre, как с указанием `genre`, так и без (в зависимости от указанного параметра 
+`with_genre: bool`). Длина словаря указывается в параметре `number_of_entries: int`.
+
+#### generate_random_favorite_list
+
+Генерируется случайный список избранного. Длина указывается в параметре `number_of_entries: int`.
 
 ## Реализованные тесты
 
